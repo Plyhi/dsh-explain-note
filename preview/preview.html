@@ -217,6 +217,7 @@
     <button id="theme">暗色</button>
     <button id="font">宋体</button>
     <button id="size">正文 18</button>
+    <button id="lang">English</button>
   </div>
   <div class="hint">先拖选正文里的词，再右键：预览页会把「复制 / 解释」菜单换成插件版本</div>
 
@@ -236,8 +237,17 @@
     const realFetch = window.fetch.bind(window)
     window.fetch = async (input, init) => {
       if (String(input).includes('/api/explain-note/explain')) {
+        const payload = JSON.parse(init.body || '{}')
+        const english = !String(payload.locale || 'zh').toLowerCase().startsWith('zh')
         await new Promise((resolve) => setTimeout(resolve, 420))
-        return new Response(JSON.stringify({
+        return new Response(JSON.stringify(english ? {
+          ok: true,
+          term: 'idempotent',
+          brief: 'Doing the same operation more than once produces the same result as doing it once.',
+          inContext: 'Here it means registering the same listener again does not stack side effects: each registration returns a cleanup function, so unloading returns to a clean state.',
+          note: 'Common mix-up: idempotent does not mean “guaranteed to succeed”; it only promises that repeating it has the same consequence.',
+          model: 'deepseek-account/deepseek-flash',
+        } : {
           ok: true,
           term: '幂等（idempotent）',
           brief: '同一个操作重复执行多次，产生的结果与执行一次相同。',
@@ -251,17 +261,38 @@
 
     const plugin = window.__XN_PREVIEW_PLUGIN__
     const dispose = []
+    const params = new URLSearchParams(location.search)
+    let activeLocale = params.get('lang') || 'zh'
+    document.documentElement.lang = params.get('htmllang') || 'zh-CN'
+    const localeListeners = new Set()
+    const locale = {
+      getLocale: () => ({ active: activeLocale }),
+      subscribe(fn) {
+        localeListeners.add(fn)
+        return () => localeListeners.delete(fn)
+      },
+    }
     plugin.apply({
       effect(callback) {
         dispose.push(callback())
       },
+      locale,
     })
 
     const body = document.body
     const themeButton = document.getElementById('theme')
     const fontButton = document.getElementById('font')
     const sizeButton = document.getElementById('size')
+    const langButton = document.getElementById('lang')
     const openButton = document.getElementById('open')
+
+    langButton.textContent = activeLocale === 'zh' ? 'English' : '中文'
+    langButton.addEventListener('click', () => {
+      activeLocale = activeLocale === 'zh' ? 'en' : 'zh'
+      document.documentElement.lang = activeLocale === 'zh' ? 'zh-CN' : 'en'
+      langButton.textContent = activeLocale === 'zh' ? 'English' : '中文'
+      for (const listener of localeListeners) listener({ active: activeLocale })
+    })
 
     themeButton.addEventListener('click', () => {
       const dark = body.toggleAttribute('data-ds-dark-theme')
@@ -309,7 +340,6 @@
     }
 
     openButton.addEventListener('click', openSample)
-    const params = new URLSearchParams(location.search)
     if (params.get('dark') === '1') {
       body.setAttribute('data-ds-dark-theme', '')
       themeButton.textContent = '亮色'
