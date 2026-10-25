@@ -1,6 +1,6 @@
 {
   "name": "dsh-explain-note",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "选中 AI 回答里的词，右键点「解释」，在会话区与左侧栏之间开一张可拖拽、可折叠、可固定、可缩放字号的便签。",
   "type": "module",
   "main": "index.js",
