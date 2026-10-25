@@ -1,0 +1,11 @@
+# dsh-explain-note bundle patch
+# 宿主半端（/api/explain-note）与客户端半端一起由这个 bundle 挂载。
+#
+# 想固定解释用的模型时，把下面 config 的注释打开并填好；
+# 不填就跟随「设置 → 模型」里当前选中的默认模型。
+- insert:
+    - id: explain-note
+      name: dsh-explain-note
+      # config:
+      #   provider: deepseek-account
+      #   model: deepseek-flash
