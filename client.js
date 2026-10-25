@@ -40,11 +40,7 @@ window.__ModuleLoader__.load({
 
     /* ───────────────────────────── 文案 ───────────────────────────── */
 
-    const isZh = String(document.documentElement.lang || navigator.language || 'zh')
-      .toLowerCase()
-      .startsWith('zh')
-
-    const L = isZh ? {
+    const ZH = {
       menuLabel: '文本操作',
       copy: '复制',
       copied: '已复制',
@@ -69,7 +65,9 @@ window.__ModuleLoader__.load({
       quote: '原文',
       model: '模型',
       noModel: '未标明模型',
-    } : {
+    }
+
+    const EN = {
       menuLabel: 'Text actions',
       copy: 'Copy',
       copied: 'Copied',
@@ -96,14 +94,22 @@ window.__ModuleLoader__.load({
       noModel: 'model unknown',
     }
 
+    function labelsFor(locale) {
+      return String(locale ?? '').toLowerCase().startsWith('zh') ? ZH : EN
+    }
+
+    // Replaced from the live DSH locale service in apply(); kept mutable so
+    // right-click menus and open notes can follow a language switch.
+    let L = EN
+
     /* ───────────────────────────── 样式 ───────────────────────────── */
 
     const CSS = `
 [data-xn-menu] {
   position: fixed;
   z-index: ${Z_MENU};
-  min-width: 184px;
-  padding: 5px;
+  min-width: 200px;
+  padding: 6px;
   border: 1px solid var(--dsw-alias-border-l2, rgba(127,127,127,.22));
   border-radius: var(--dsw-radius-md, 10px);
   background: var(--dsw-alias-bg-overlay, var(--dsw-specific-menu, #fff));
@@ -111,7 +117,7 @@ window.__ModuleLoader__.load({
   box-shadow: var(--dsw-shadow-lv3, 0 18px 44px rgba(0,0,0,.22));
   backdrop-filter: var(--dsw-menu-backdrop-filter, blur(18px) saturate(1.2));
   font-family: var(--xn-font, var(--dsw-font-family, system-ui));
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.4;
   user-select: none;
   animation: xn-menu-in .09s ease-out;
@@ -123,13 +129,13 @@ window.__ModuleLoader__.load({
   gap: 9px;
   width: 100%;
   box-sizing: border-box;
-  padding: 7px 9px;
+  padding: 8px 10px;
   border: 0;
   border-radius: 7px;
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 13px;
+  font-size: 15px;
   text-align: left;
   cursor: pointer;
 }
@@ -145,18 +151,18 @@ window.__ModuleLoader__.load({
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 16px;
-  height: 16px;
+  width: 17px;
+  height: 17px;
   color: var(--dsw-alias-label-tertiary, rgba(127,127,127,.8));
 }
-[data-xn-menu] [data-xn-icon] svg { width: 16px; height: 16px; display: block; }
+[data-xn-menu] [data-xn-icon] svg { width: 17px; height: 17px; display: block; }
 [data-xn-menu] [data-xn-item][data-xn-action="explain"] [data-xn-icon] {
   color: var(--dsw-alias-brand-primary, #4176e6);
 }
 [data-xn-menu] [data-xn-hint] {
   margin-left: auto;
   padding-left: 14px;
-  font-size: 10.5px;
+  font-size: 11.5px;
   letter-spacing: .02em;
   color: var(--dsw-alias-label-tertiary, rgba(127,127,127,.8));
 }
@@ -182,7 +188,7 @@ window.__ModuleLoader__.load({
   box-shadow: var(--dsw-shadow-lv3, 0 18px 48px rgba(0,0,0,.24));
   backdrop-filter: var(--dsw-menu-backdrop-filter, blur(16px) saturate(1.15));
   font-family: var(--xn-font, var(--dsw-font-family, system-ui));
-  font-size: calc(var(--xn-base, 14px) * var(--xn-zoom, 1));
+  font-size: calc((var(--xn-base, 14px) + 1px) * var(--xn-zoom, 1));
   line-height: 1.62;
   letter-spacing: .006em;
   transform-origin: 12px 100%;
@@ -236,7 +242,7 @@ window.__ModuleLoader__.load({
   gap: 0;
 }
 [data-xn-note] [data-xn-kicker] {
-  font-size: .64em;
+  font-size: .70em;
   font-weight: 600;
   line-height: 1.35;
   letter-spacing: .1em;
@@ -247,7 +253,7 @@ window.__ModuleLoader__.load({
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 1.02em;
+  font-size: 1.05em;
   font-weight: 600;
   line-height: 1.4;
 }
@@ -312,7 +318,7 @@ window.__ModuleLoader__.load({
 [data-xn-note] [data-xn-label] {
   display: inline-block;
   margin-bottom: 3px;
-  font-size: .68em;
+  font-size: .74em;
   font-weight: 600;
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -330,14 +336,14 @@ window.__ModuleLoader__.load({
   border-left: 2px solid var(--dsw-alias-brand-primary, #4176e6);
   border-radius: 0 8px 8px 0;
   background: color-mix(in srgb, var(--dsw-alias-brand-primary, #4176e6) 6%, transparent);
-  font-size: .86em;
+  font-size: .90em;
   line-height: 1.6;
   color: var(--dsw-alias-label-secondary, var(--xn-muted, rgba(60,60,60,.9)));
 }
 [data-xn-note] [data-xn-quote] [data-xn-quote-label] {
   display: block;
   margin-bottom: 2px;
-  font-size: .74em;
+  font-size: .78em;
   letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--dsw-alias-label-tertiary, rgba(127,127,127,.8));
@@ -350,7 +356,7 @@ window.__ModuleLoader__.load({
 }
 [data-xn-note] [data-xn-extra] {
   margin: 10px 0 0;
-  font-size: .88em;
+  font-size: .92em;
   line-height: 1.6;
   color: var(--dsw-alias-label-tertiary, var(--xn-muted, rgba(90,90,90,.9)));
 }
@@ -359,7 +365,7 @@ window.__ModuleLoader__.load({
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: .68em;
+  font-size: .72em;
   color: var(--dsw-alias-label-tertiary, rgba(127,127,127,.75));
 }
 [data-xn-note] [data-xn-foot] {
@@ -371,11 +377,11 @@ window.__ModuleLoader__.load({
   border-top: 1px solid var(--dsw-alias-border-l2, rgba(127,127,127,.12));
 }
 [data-xn-note] [data-xn-zoom] { display: flex; align-items: center; gap: 1px; }
-[data-xn-note] [data-xn-zoom] [data-xn-btn] { width: 24px; height: 24px; font-size: .76em; font-weight: 600; }
+[data-xn-note] [data-xn-zoom] [data-xn-btn] { width: 24px; height: 24px; font-size: .80em; font-weight: 600; }
 [data-xn-note] [data-xn-zoom-label] {
   min-width: 38px;
   text-align: center;
-  font-size: .72em;
+  font-size: .76em;
   font-variant-numeric: tabular-nums;
   color: var(--dsw-alias-label-tertiary, rgba(127,127,127,.85));
 }
@@ -384,7 +390,7 @@ window.__ModuleLoader__.load({
   width: auto;
   height: 26px;
   padding: 0 9px;
-  font-size: .78em;
+  font-size: .82em;
   color: var(--dsw-alias-brand-primary, #4176e6);
 }
 [data-xn-note] [data-xn-copy]:hover {
@@ -725,6 +731,26 @@ window.__ModuleLoader__.load({
         themeFrame: 0,
       }
 
+      let locale = null
+      try {
+        locale = ctx.locale
+        if (!locale && typeof ctx.get === 'function') locale = ctx.get('locale')
+      } catch {
+        locale = null
+      }
+
+      const readActiveLocale = () => {
+        try {
+          const active = locale?.getLocale?.()?.active
+          if (typeof active === 'string' && active !== '') return active
+        } catch {
+          /* 服务还没就绪时退回文档语言 */
+        }
+        return document.documentElement.lang || navigator.language || 'en'
+      }
+
+      L = labelsFor(readActiveLocale())
+
       const style = ensureStyle()
       const cleanup = []
 
@@ -739,6 +765,22 @@ window.__ModuleLoader__.load({
         state.menu = null
         current.element.remove()
         current.element = null
+      }
+
+      function refreshLocale() {
+        L = labelsFor(readActiveLocale())
+        closeMenu()
+        for (const note of state.notes) {
+          try {
+            note.refreshLabels?.()
+          } catch {
+            /* 单个便签刷新失败不影响别的 */
+          }
+        }
+      }
+
+      function failureText(message) {
+        return L.failed + (L === ZH ? '：' : ': ') + message
       }
 
       function openMenu(info, x, y) {
@@ -962,6 +1004,15 @@ window.__ModuleLoader__.load({
         note.copyButton = copyButton
         note.pinButton = pinButton
         note.collapseButton = collapseButton
+        note.closeButton = closeButton
+        note.kickerEl = kickerEl
+        note.contextLabel = contextLabel
+        note.zoomDown = zoomDown
+        note.zoomUp = zoomUp
+        note.retryButton = retryButton
+        note.model = ''
+        note.errorMessage = ''
+        note.loadingPhase = 'loading'
 
         note.raise = () => {
           if (note.pinned) {
@@ -1018,6 +1069,36 @@ window.__ModuleLoader__.load({
           applyTheme(root, next)
           const current = Number.parseFloat(root.style.getPropertyValue('--xn-zoom')) || note.zoom
           root.style.setProperty('--xn-zoom', current.toFixed(2))
+        }
+        note.refreshLabels = () => {
+          root.setAttribute('aria-label', L.noteLabel)
+          kickerEl.textContent = L.kicker
+          contextLabel.textContent = L.inContext
+          const quoteLabel = quote.querySelector('[data-xn-quote-label]')
+          if (quoteLabel) quoteLabel.textContent = L.quote
+
+          pinButton.title = note.pinned ? L.unpin : L.pin
+          pinButton.setAttribute('aria-label', pinButton.title)
+          collapseButton.title = note.expanded ? L.collapse : L.expand
+          collapseButton.setAttribute('aria-label', collapseButton.title)
+          closeButton.title = L.close
+          closeButton.setAttribute('aria-label', L.close)
+          zoomDown.title = L.fontDown
+          zoomDown.setAttribute('aria-label', L.fontDown)
+          zoomUp.title = L.fontUp
+          zoomUp.setAttribute('aria-label', L.fontUp)
+          retryButton.textContent = L.retry
+          copyButton.textContent = L.copyNote
+
+          if (root.hasAttribute('data-loading')) {
+            statusText.textContent = note.loadingPhase === 'slow' ? L.slow : L.loading
+          }
+          if (root.hasAttribute('data-error') && note.errorMessage !== '') {
+            errorText.textContent = failureText(note.errorMessage)
+          }
+          if (note.loadingPhase === 'ok') {
+            meta.textContent = note.model === '' ? L.noModel : `${L.model} · ${note.model}`
+          }
         }
 
         pinButton.addEventListener('click', (event) => {
@@ -1129,6 +1210,7 @@ window.__ModuleLoader__.load({
           answer: text(info.answer, 7000),
           question: text(info.question, 2200),
           pageTitle: text(document.title, 200),
+          locale: readActiveLocale(),
         }
         note.payload = payload
         loadNote(state, note, payload)
@@ -1142,12 +1224,18 @@ window.__ModuleLoader__.load({
         note.controller = controller
         if (note.timer !== null) window.clearTimeout(note.timer)
         note.timer = window.setTimeout(() => {
-          if (!note.closed && note.el.hasAttribute('data-loading')) note.statusText.textContent = L.slow
+          if (!note.closed && note.el.hasAttribute('data-loading')) {
+            note.loadingPhase = 'slow'
+            note.statusText.textContent = L.slow
+          }
         }, 8000)
 
         note.el.setAttribute('data-loading', '')
         note.el.removeAttribute('data-error')
         note.errorText.textContent = ''
+        note.errorMessage = ''
+        note.model = ''
+        note.loadingPhase = 'loading'
         note.statusText.textContent = L.loading
         note.lead.textContent = ''
         note.contextText.textContent = ''
@@ -1176,6 +1264,7 @@ window.__ModuleLoader__.load({
             window.clearTimeout(note.timer)
             note.timer = null
           }
+          note.loadingPhase = 'ok'
           renderNote(note, data)
         } catch (error) {
           if (note.closed || controller.signal.aborted) return
@@ -1185,9 +1274,12 @@ window.__ModuleLoader__.load({
           }
           note.el.removeAttribute('data-loading')
           note.el.setAttribute('data-error', '')
-          note.errorText.textContent = error?.name === 'AbortError'
-            ? L.failed + '：请求超时了。'
-            : L.failed + '：' + String(error?.message ?? error)
+          const message = error?.name === 'AbortError'
+            ? (L === ZH ? '请求超时了。' : 'The request timed out.')
+            : String(error?.message ?? error)
+          note.loadingPhase = 'error'
+          note.errorMessage = message
+          note.errorText.textContent = failureText(message)
           clampNote(note)
         }
       }
@@ -1227,6 +1319,7 @@ window.__ModuleLoader__.load({
         }
 
         const model = text(data.model, 120)
+        note.model = model
         note.meta.textContent = model === '' ? L.noModel : `${L.model} · ${model}`
         note.meta.title = model
 
@@ -1366,6 +1459,15 @@ window.__ModuleLoader__.load({
         closeMenu()
         for (const note of state.notes) clampNote(note)
       })
+
+      if (locale && typeof locale.subscribe === 'function') {
+        try {
+          const off = locale.subscribe(refreshLocale)
+          cleanup.push(typeof off === 'function' ? off : () => {})
+        } catch {
+          /* locale 服务异常时保持当前语言 */
+        }
+      }
 
       let themeObserver = null
       try {
