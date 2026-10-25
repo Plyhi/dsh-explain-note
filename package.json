@@ -1,0 +1,45 @@
+{
+  "name": "dsh-explain-note",
+  "version": "0.1.0",
+  "description": "选中 AI 回答里的词，右键点「解释」，在会话区与左侧栏之间开一张可拖拽、可折叠、可固定、可缩放字号的便签。",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [],
+      "platform": "web"
+    }
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "explain",
+    "selection",
+    "sticky-note"
+  ],
+  "author": "Plyhi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Plyhi/dsh-explain-note.git"
+  },
+  "homepage": "https://github.com/Plyhi/dsh-explain-note",
+  "bugs": {
+    "url": "https://github.com/Plyhi/dsh-explain-note/issues"
+  }
+}
