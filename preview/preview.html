@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>dsh-explain-note · 独立预览</title>
+<style>
+  :root {
+    --dsw-font-family: "Segoe UI", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    --dsw-font-mono: "Cascadia Code", Consolas, "Courier New", monospace;
+    --dsw-alias-bg-base: #f7f8fa;
+    --dsw-alias-bg-overlay: #ffffff;
+    --dsw-alias-bg-layer-1: #ffffff;
+    --dsw-alias-bg-layer-2: #f0f2f6;
+    --dsw-alias-bg-layer-3: #e4e8ef;
+    --dsw-alias-label-primary: #0f1115;
+    --dsw-alias-label-secondary: #4b5563;
+    --dsw-alias-label-tertiary: #8a919c;
+    --dsw-alias-border-l1: rgba(15, 17, 21, .08);
+    --dsw-alias-border-l2: rgba(15, 17, 21, .12);
+    --dsw-alias-border-l3: rgba(15, 17, 21, .06);
+    --dsw-alias-brand-primary: #4176e6;
+    --dsw-alias-interactive-bg-hover: rgba(15, 17, 21, .06);
+    --dsw-specific-menu: rgba(255, 255, 255, .92);
+    --dsw-menu-backdrop-filter: blur(22px) saturate(1.25);
+    --dsw-shadow-lv3: 0 0 1px rgba(0,0,0,.18), 0 12px 32px rgba(15, 23, 42, .14);
+    --dsw-radius-md: 10px;
+    --dsw-radius-lg: 14px;
+    --dsw-specific-sidebar-fill: #eef1f6;
+    --dsh-windows-titlebar-height: 40px;
+    --dsh-frame-top-clearance: 40px;
+    --font-serif: Georgia, "Times New Roman", "Songti SC", SimSun, serif;
+  }
+  body[data-ds-dark-theme] {
+    --dsw-alias-bg-base: #151517;
+    --dsw-alias-bg-overlay: #232326;
+    --dsw-alias-bg-layer-1: #232326;
+    --dsw-alias-bg-layer-2: #2c2c30;
+    --dsw-alias-bg-layer-3: #37373c;
+    --dsw-alias-label-primary: #edf0f5;
+    --dsw-alias-label-secondary: #b6bcc7;
+    --dsw-alias-label-tertiary: #8b929d;
+    --dsw-alias-border-l1: rgba(255,255,255,.08);
+    --dsw-alias-border-l2: rgba(255,255,255,.14);
+    --dsw-alias-border-l3: rgba(255,255,255,.06);
+    --dsw-alias-brand-primary: #7aaaff;
+    --dsw-alias-interactive-bg-hover: rgba(255,255,255,.08);
+    --dsw-specific-menu: rgba(35, 35, 38, .94);
+    --dsw-specific-sidebar-fill: #1d1d20;
+    --dsw-shadow-lv3: 0 0 1px rgba(0,0,0,.6), 0 16px 40px rgba(0,0,0,.5);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: flex;
+    overflow: hidden;
+    background: var(--dsw-alias-bg-base);
+    color: var(--dsw-alias-label-primary);
+    font-family: var(--dsw-font-family);
+    font-size: 14px;
+  }
+  body[data-serif="1"] { --dsw-font-family: var(--font-serif); }
+  body[data-base="18"] { font-size: 18px; }
+  .preview_sidebarCol {
+    width: 280px;
+    flex: none;
+    padding: 58px 12px 12px;
+    background: var(--dsw-specific-sidebar-fill);
+    border-right: .5px solid var(--dsw-alias-border-l3);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; padding: 0 8px 14px; font-weight: 600; }
+  .brand-dot { width: 22px; height: 22px; border-radius: 7px; background: linear-gradient(135deg, #7aaaff, #4176e6); }
+  .session-row { padding: 8px 10px; border-radius: 9px; color: var(--dsw-alias-label-secondary); font-size: .92em; }
+  .session-row[data-active] { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); font-weight: 600; }
+  .sidebar-foot { margin-top: auto; padding: 8px 10px; font-size: .8em; color: var(--dsw-alias-label-tertiary); }
+  .chat {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--dsw-alias-bg-base);
+    border-radius: 16px 0 0 0;
+  }
+  .chat-header {
+    height: 58px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--dsw-alias-border-l1);
+    font-weight: 600;
+    color: var(--dsw-alias-label-secondary);
+  }
+  .chat-scroll { flex: 1; overflow-y: auto; padding: 28px 24px 80px; }
+  .column { max-width: 680px; margin: 0 auto; }
+  .user-row { display: flex; justify-content: flex-end; margin: 0 0 26px; }
+  .user-bubble {
+    max-width: 78%;
+    padding: 10px 14px;
+    border-radius: 14px 14px 4px 14px;
+    background: var(--dsw-alias-bg-layer-1);
+    border: 1px solid var(--dsw-alias-border-l1);
+    line-height: 1.65;
+  }
+  .assistant { line-height: 1.75; }
+  .assistant h2 { font-size: 1.18em; margin: 0 0 10px; }
+  .assistant p { margin: 0 0 14px; }
+  .assistant .mark {
+    background: color-mix(in srgb, var(--dsw-alias-brand-primary) 16%, transparent);
+    border-radius: 4px;
+    padding: 0 2px;
+  }
+  .assistant code, .assistant pre {
+    font-family: var(--dsw-font-mono);
+    font-size: .9em;
+  }
+  .assistant pre {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--dsw-alias-bg-layer-1);
+    border: 1px solid var(--dsw-alias-border-l1);
+    overflow: auto;
+  }
+  .toolbar {
+    position: fixed;
+    top: 12px;
+    right: 18px;
+    z-index: 300;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px;
+    border-radius: 12px;
+    background: var(--dsw-specific-menu);
+    border: 1px solid var(--dsw-alias-border-l2);
+    box-shadow: var(--dsw-shadow-lv3);
+    backdrop-filter: blur(16px);
+  }
+  .toolbar button {
+    border: 0;
+    border-radius: 8px;
+    padding: 6px 10px;
+    background: transparent;
+    color: var(--dsw-alias-label-secondary);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .toolbar button:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
+  .toolbar button[data-on] { background: color-mix(in srgb, var(--dsw-alias-brand-primary) 14%, transparent); color: var(--dsw-alias-brand-primary); }
+  .toolbar .sep { width: 1px; height: 18px; background: var(--dsw-alias-border-l2); }
+  .hint {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    z-index: 200;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: var(--dsw-specific-menu);
+    border: 1px solid var(--dsw-alias-border-l2);
+    color: var(--dsw-alias-label-tertiary);
+    font-size: 12px;
+    box-shadow: var(--dsw-shadow-lv3);
+  }
+  @media (max-width: 900px) { .preview_sidebarCol { width: 200px; } }
+</style>
+</head>
+<body data-chat-turn="1">
+  <aside class="preview_sidebarCol">
+    <div class="brand"><span class="brand-dot"></span><span>DeepSeek Harness</span></div>
+    <div class="session-row" data-active>解释便签 · 预览</div>
+    <div class="session-row">昨天的会话</div>
+    <div class="session-row">插件调试</div>
+    <div class="sidebar-foot">预览页 · 不连真实模型</div>
+  </aside>
+
+  <main class="chat">
+    <div class="chat-header">新会话</div>
+    <div class="chat-scroll" data-chat-following-tail>
+      <div class="column" data-chat-flow>
+        <div data-chat-flow-kind="user" data-chat-turn="1" class="user-row">
+          <div class="user-bubble">Harness 里的 effect 为什么强调幂等？</div>
+        </div>
+
+        <div data-chat-flow-kind="assistant-step" data-chat-turn="1" data-chat-anchor-key="assistant:preview-1" class="assistant">
+          <h2>幂等不是“不会出错”，而是“重复不会改变结果”</h2>
+          <p>
+            在 Harness 里，这个选择器是<span class="mark" id="term">幂等</span>的：同一轮里重复执行，
+            注册结果不会叠加，也不会把已经卸载的监听重新装回来。它关心的是“再做一次”的后果，
+            而不是单次执行成不成功。
+          </p>
+          <p>
+            所以像 <code>ctx.effect()</code> 这样的注册，通常会把清理函数作为返回值交出去：
+            卸载时按相反顺序收摊，下一轮重新注册时又从干净状态开始。这样 HMR、插件热重载、
+            会话切换都不会留下重复的副作用。
+          </p>
+          <pre><code>ctx.effect(() =&gt; {
+  const off = listen()
+  return () =&gt; off()
+}, 'my-plugin: lifecycle')</code></pre>
+          <p>
+            换句话说，幂等让“重放”变成安全的操作：你不需要知道这段代码被执行过几次，
+            只需要知道执行完之后的状态是一样的。
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toolbar">
+    <button id="open" data-on>打开示例解释</button>
+    <span class="sep"></span>
+    <button id="theme">暗色</button>
+    <button id="font">宋体</button>
+    <button id="size">正文 18</button>
+  </div>
+  <div class="hint">先拖选正文里的词，再右键：预览页会把「复制 / 解释」菜单换成插件版本</div>
+
+  <script>
+    // 模拟 DSH 的 client Module Loader：先接住 client.js 的自注册。
+    window.__ModuleLoader__ = {
+      load({ factory }) {
+        window.__XN_PREVIEW_PLUGIN__ = factory(() => {
+          throw new Error('preview: no require')
+        })
+      },
+    }
+  </script>
+  <script src="../client.js"></script>
+  <script>
+    // 没有宿主，就把解释接口换成本地假数据；其余 fetch 一律拒绝。
+    const realFetch = window.fetch.bind(window)
+    window.fetch = async (input, init) => {
+      if (String(input).includes('/api/explain-note/explain')) {
+        await new Promise((resolve) => setTimeout(resolve, 420))
+        return new Response(JSON.stringify({
+          ok: true,
+          term: '幂等（idempotent）',
+          brief: '同一个操作重复执行多次，产生的结果与执行一次相同。',
+          inContext: '这里指插件重复注册监听时不会叠加副作用：每次注册都返回清理函数，卸载后状态回到干净起点。',
+          note: '易混：幂等不等于“可重试成功”，它只保证重复的后果一致。',
+          model: 'deepseek-account/deepseek-flash',
+        }), { status: 200, headers: { 'content-type': 'application/json' } })
+      }
+      return realFetch(input, init)
+    }
+
+    const plugin = window.__XN_PREVIEW_PLUGIN__
+    const dispose = []
+    plugin.apply({
+      effect(callback) {
+        dispose.push(callback())
+      },
+    })
+
+    const body = document.body
+    const themeButton = document.getElementById('theme')
+    const fontButton = document.getElementById('font')
+    const sizeButton = document.getElementById('size')
+    const openButton = document.getElementById('open')
+
+    themeButton.addEventListener('click', () => {
+      const dark = body.toggleAttribute('data-ds-dark-theme')
+      themeButton.textContent = dark ? '亮色' : '暗色'
+      themeButton.toggleAttribute('data-on', dark)
+    })
+    fontButton.addEventListener('click', () => {
+      const serif = body.getAttribute('data-serif') === '1'
+      body.setAttribute('data-serif', serif ? '0' : '1')
+      fontButton.textContent = serif ? '宋体' : '系统字体'
+      fontButton.toggleAttribute('data-on', !serif)
+    })
+    sizeButton.addEventListener('click', () => {
+      const large = body.getAttribute('data-base') === '18'
+      body.setAttribute('data-base', large ? '14' : '18')
+      sizeButton.textContent = large ? '正文 18' : '正文 14'
+      sizeButton.toggleAttribute('data-on', !large)
+    })
+
+    function selectTerm() {
+      const term = document.getElementById('term')
+      const node = term.firstChild
+      if (!node) return false
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+      const rect = term.getBoundingClientRect()
+      term.dispatchEvent(new MouseEvent('contextmenu', {
+        bubbles: true,
+        cancelable: true,
+        button: 2,
+        clientX: rect.left + Math.min(60, rect.width / 2),
+        clientY: rect.bottom + 2,
+      }))
+      return true
+    }
+
+    function openSample() {
+      if (!selectTerm()) return
+      window.setTimeout(() => {
+        document.querySelector('[data-xn-action="explain"]')?.click()
+      }, 80)
+    }
+
+    openButton.addEventListener('click', openSample)
+    const params = new URLSearchParams(location.search)
+    if (params.get('dark') === '1') {
+      body.setAttribute('data-ds-dark-theme', '')
+      themeButton.textContent = '亮色'
+      themeButton.setAttribute('data-on', '')
+    }
+    if (params.get('serif') === '1') {
+      body.setAttribute('data-serif', '1')
+      fontButton.textContent = '系统字体'
+      fontButton.setAttribute('data-on', '')
+    }
+    if (params.get('menu') === '1') {
+      window.setTimeout(() => selectTerm(), 180)
+    } else if (params.get('auto') === '1') {
+      window.setTimeout(openSample, 160)
+    }
+  </script>
+</body>
+</html>
