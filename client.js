@@ -1394,6 +1394,8 @@ window.__ModuleLoader__.load({
         if (state.themeFrame !== 0) return
         state.themeFrame = requestAnimationFrame(() => {
           state.themeFrame = 0
+          const nextLabels = labelsFor(readActiveLocale())
+          if (nextLabels !== L) refreshLocale()
           for (const note of state.notes) {
             try {
               note.applyTheme()
@@ -1474,7 +1476,7 @@ window.__ModuleLoader__.load({
         themeObserver = new MutationObserver(scheduleThemeRefresh)
         themeObserver.observe(document.documentElement, {
           attributes: true,
-          attributeFilter: ['data-ds-dark-theme', 'data-dsh-maid-atelier', 'data-dsh-whale-maid-font', 'data-dsh-whale-maid-workspace-font', 'data-platform', 'data-windows-titlebar', 'data-fullscreen', 'style'],
+          attributeFilter: ['data-ds-dark-theme', 'data-dsh-maid-atelier', 'data-dsh-whale-maid-font', 'data-dsh-whale-maid-workspace-font', 'data-platform', 'data-windows-titlebar', 'data-fullscreen', 'style', 'lang'],
         })
         themeObserver.observe(document.body, {
           attributes: true,
